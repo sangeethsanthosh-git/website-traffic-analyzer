@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <p class="eyebrow">Traffic Intelligence Dashboard</p>
+        <h1>Monitor website traffic, spot peak days, and visualize growth.</h1>
+        <p class="hero-text">
+            This Flask application reads website traffic from local CSV datasets, analyzes the data with NumPy,
+            and turns the results into an easy-to-read Matplotlib trend chart.
+        </p>
+        <div class="hero-meta">
+            <span class="status-pill {{ 'status-live' if traffic_dataset_ready else 'status-offline' }}">
+                {{ "Traffic dataset loaded" if traffic_dataset_ready else "Dataset unavailable" }}
+            </span>
+            <span class="hero-note">
+                {% if traffic_dataset_ready %}
+                    Analytics update whenever <code>data/{{ traffic_dataset_filename }}</code> changes.
+                {% else %}
+                    Add the traffic CSV file to the <code>data</code> folder to enable analysis.
+                {% endif %}
+            </span>
+        </div>
+        {% if traffic_dataset_error %}
+            <p class="helper-text">{{ traffic_dataset_error }}</p>
+        {% endif %}
+    </div>
+
+    <article class="panel chart-panel">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Visualization</p>
+                <h2>Traffic Trend Chart</h2>
+            </div>
+            {% if summary.latest_date %}
+                <span class="mini-badge">Latest: {{ summary.latest_date }}</span>
+            {% endif %}
+        </div>
+
+        {% if chart_image %}
+            <img
+                class="chart-image"
+                src="data:image/png;base64,{{ chart_image }}"
+                alt="Line chart showing website traffic"
+            >
+        {% else %}
+            <div class="empty-state">
+                <h3>No chart yet</h3>
+                <p>The visualization appears once the traffic CSV dataset is available and readable.</p>
+            </div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="stats-grid">
+    <article class="panel stat-card">
+        <span class="stat-label">Recorded Days</span>
+        <strong class="stat-value">{{ summary.total_days }}</strong>
+        <span class="stat-caption">Total days available for analysis</span>
+    </article>
+    <article class="panel stat-card">
+        <span class="stat-label">Total Users</span>
+        <strong class="stat-value">{{ summary.total_users }}</strong>
+        <span class="stat-caption">Combined traffic volume</span>
+    </article>
+    <article class="panel stat-card">
+        <span class="stat-label">Average / Day</span>
+        <strong class="stat-value">{{ "%.1f"|format(summary.average_users) }}</strong>
+        <span class="stat-caption">Mean user count across all days</span>
+    </article>
+    <article class="panel stat-card">
+        <span class="stat-label">Trend</span>
+        <strong class="stat-value">{{ summary.trend_label }}</strong>
+        <span class="stat-caption">
+            {% if summary.change_percent is not none %}
+                {{ "%+.1f"|format(summary.change_percent) }}% from first to latest day
+            {% else %}
+                Add at least two data points to compare change
+            {% endif %}
+        </span>
+    </article>
+</section>
+
+{% if benchmark_records or benchmark_error %}
+<section class="panel benchmark-panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Benchmark Dataset</p>
+            <h2>Top Websites Worldwide</h2>
+        </div>
+        {% if benchmark_summary.data_month %}
+            <span class="mini-badge">{{ benchmark_summary.data_month }}</span>
+        {% endif %}
+    </div>
+
+    {% if benchmark_error %}
+        <p class="helper-text">{{ benchmark_error }}</p>
+    {% else %}
+        <p class="helper-text">
+            Loaded from <code>data/{{ benchmark_filename }}</code>. This local benchmark is based on Similarweb's
+            February 2025 worldwide traffic rankings and was curated to keep the comparison focused on mainstream sites.
+        </p>
+
+        <form action="{{ url_for('dashboard') }}" method="get" class="benchmark-search-form">
+            <label>
+                Search a website in the benchmark dataset
+                <input
+                    type="text"
+                    name="benchmark_query"
+                    value="{{ benchmark_query }}"
+                    placeholder="Try reddit.com, amazon.com, chatgpt.com"
+                >
+            </label>
+            <button type="submit" class="primary-btn">Search Website</button>
+            <a href="{{ url_for('dashboard') }}" class="text-link">Clear search</a>
+        </form>
+
+        <section class="benchmark-stats">
+            <article class="panel stat-card">
+                <span class="stat-label">Websites Tracked</span>
+                <strong class="stat-value">{{ benchmark_summary.site_count }}</strong>
+                <span class="stat-caption">Domains in the local benchmark file</span>
+            </article>
+            <article class="panel stat-card">
+                <span class="stat-label">Combined Visits</span>
+                <strong class="stat-value">{{ benchmark_summary.combined_visits_display }}</strong>
+                <span class="stat-caption">Estimated total monthly visits across the benchmark list</span>
+            </article>
+            <article class="panel stat-card">
+                <span class="stat-label">Leading Website</span>
+                <strong class="stat-value">{{ benchmark_summary.top_website }}</strong>
+                <span class="stat-caption">{{ benchmark_summary.top_visits_display }} estimated monthly visits</span>
+            </article>
+            <article class="panel stat-card">
+                <span class="stat-label">Fastest Growth</span>
+                <strong class="stat-value">{{ benchmark_summary.top_yearly_gainer }}</strong>
+                <span class="stat-caption">{{ benchmark_summary.top_yearly_gainer_pct|signed_pct }} year-over-year</span>
+            </article>
+        </section>
+
+        {% if benchmark_query %}
+            <section class="search-analysis">
+                {% if benchmark_search.selected_website %}
+                    <article class="search-analysis-card">
+                        <div class="section-heading">
+                            <div>
+                                <p class="eyebrow">Search Result</p>
+                                <h3>{{ benchmark_search.selected_website }}</h3>
+                            </div>
+                            <span class="table-badge">Rank #{{ benchmark_search.selected_rank }}</span>
+                        </div>
+                        <p class="helper-text">
+                            Showing the strongest match for <code>{{ benchmark_search.normalized_query }}</code>.
+                            Matches found: {{ benchmark_search.matching_count }}.
+                        </p>
+
+                        <div class="search-metrics">
+                            <article class="panel stat-card">
+                                <span class="stat-label">Monthly Visits</span>
+                                <strong class="stat-value">{{ benchmark_search.monthly_visits_display }}</strong>
+                                <span class="stat-caption">Estimated visits for {{ benchmark_summary.data_month }}</span>
+                            </article>
+                            <article class="panel stat-card">
+                                <span class="stat-label">MoM Change</span>
+                                <strong class="stat-value">{{ benchmark_search.mom_change_pct|signed_pct }}</strong>
+                                <span class="stat-caption">Compared with the previous month</span>
+                            </article>
+                            <article class="panel stat-card">
+                                <span class="stat-label">YoY Change</span>
+                                <strong class="stat-value">{{ benchmark_search.yearly_change_pct|signed_pct }}</strong>
+                                <span class="stat-caption">Compared with the previous year</span>
+                            </article>
+                            <article class="panel stat-card">
+                                <span class="stat-label">Trajectory</span>
+                                <strong class="stat-value">{{ benchmark_search.trajectory_label }}</strong>
+                                <span class="stat-caption">Short summary of recent momentum</span>
+                            </article>
+                        </div>
+
+                        <div class="search-insights">
+                            <p>
+                                <strong>{{ benchmark_search.selected_website }}</strong> accounts for
+                                <strong>{{ "%.2f"|format(benchmark_search.benchmark_share_pct) }}%</strong>
+                                of the visits in this bundled benchmark list.
+                            </p>
+                            <p>
+                                It is operating at <strong>{{ "%.2f"|format(benchmark_search.relative_to_top_pct) }}%</strong>
+                                of the traffic volume of the #1 site in the dataset.
+                            </p>
+                            <p>
+                                Relative to the benchmark average, its traffic is
+                                <strong>{{ benchmark_search.relative_to_average_pct|signed_pct }}</strong>.
+                            </p>
+                        </div>
+
+                        {% if benchmark_focus_chart %}
+                            <img
+                                class="chart-image"
+                                src="data:image/png;base64,{{ benchmark_focus_chart }}"
+                                alt="Comparison chart for the searched website"
+                            >
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <div class="empty-state">
+                        <h3>No benchmark match found</h3>
+                        <p>Try a domain from the dataset such as <code>google.com</code>, <code>reddit.com</code>, or <code>amazon.com</code>.</p>
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        <section class="benchmark-layout">
+            <article class="benchmark-chart-block">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Comparison</p>
+                        <h3>Estimated Monthly Visits</h3>
+                    </div>
+                    <span class="table-badge">Top 10</span>
+                </div>
+                {% if benchmark_chart_image %}
+                    <img
+                        class="chart-image"
+                        src="data:image/png;base64,{{ benchmark_chart_image }}"
+                        alt="Bar chart comparing estimated monthly visits for top websites"
+                    >
+                {% endif %}
+                <p class="helper-text">
+                    Strongest month-over-month gainer: <strong>{{ benchmark_summary.top_mom_gainer }}</strong>
+                    ({{ benchmark_summary.top_mom_gainer_pct|signed_pct }}).
+                </p>
+            </article>
+
+            <article class="benchmark-table-block">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Ranking</p>
+                        <h3>Local Benchmark Table</h3>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Website</th>
+                                <th>Monthly Visits</th>
+                                <th>MoM</th>
+                                <th>YoY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in benchmark_display_records %}
+                                <tr>
+                                    <td>{{ record.source_rank }}</td>
+                                    <td>{{ record.website }}</td>
+                                    <td>{{ record.monthly_visits_display }}</td>
+                                    <td>{{ record.mom_change_pct|signed_pct }}</td>
+                                    <td>{{ record.yearly_change_pct|signed_pct }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}
