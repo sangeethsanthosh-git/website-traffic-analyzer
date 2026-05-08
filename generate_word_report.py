@@ -15,7 +15,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DOCX = BASE_DIR / "WEBSITE_TRAFFIC_ANALYZER_REPORT.docx"
+FALLBACK_OUTPUT_DOCX = BASE_DIR / "WEBSITE_TRAFFIC_ANALYZER_REPORT_UPDATED.docx"
 ARCH_IMAGE = BASE_DIR / "system_architecture.png"
+LOGIN_SCREENSHOT = BASE_DIR / "report_assets" / "login_page.png"
+DASHBOARD_SCREENSHOT = BASE_DIR / "report_assets" / "dashboard_page.png"
 
 
 def set_run_font(run, size=12, bold=False, italic=False):
@@ -514,6 +517,23 @@ def build_report(document: Document):
             run = paragraph.add_run(text)
             set_run_font(run, size=11)
 
+    add_subsection_title(document, "11.3 SCREENSHOTS")
+    add_paragraph(document, "The following screenshots show the login page and the main analytics dashboard of the Website Traffic Analyzer application.")
+
+    if LOGIN_SCREENSHOT.exists():
+        document.add_picture(str(LOGIN_SCREENSHOT), width=Inches(5.9))
+        caption = document.add_paragraph()
+        caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = caption.add_run("Screenshot 11.3.1 Login Page")
+        set_run_font(run, size=11, bold=True)
+
+    if DASHBOARD_SCREENSHOT.exists():
+        document.add_picture(str(DASHBOARD_SCREENSHOT), width=Inches(5.9))
+        caption = document.add_paragraph()
+        caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = caption.add_run("Screenshot 11.3.2 Dashboard Page")
+        set_run_font(run, size=11, bold=True)
+
 
 def main():
     create_architecture_image(ARCH_IMAGE)
@@ -526,8 +546,13 @@ def main():
     create_toc_page(document)
     add_page_break(document)
     build_report(document)
-    document.save(OUTPUT_DOCX)
-    print(f"Created {OUTPUT_DOCX}")
+    output_path = OUTPUT_DOCX
+    try:
+        document.save(output_path)
+    except PermissionError:
+        output_path = FALLBACK_OUTPUT_DOCX
+        document.save(output_path)
+    print(f"Created {output_path}")
 
 
 if __name__ == "__main__":

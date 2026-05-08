@@ -4,6 +4,16 @@ Website Traffic Analyzer is a workshop-level Flask web application that analyzes
 
 The project is designed to be simple, practical, and easy to explain. All runtime Python logic is kept inside `app.py`, which makes the project suitable for classroom demos, workshops, and mini project presentations.
 
+## Screenshots
+
+### Login Page
+
+![Login Page](report_assets/login_page.png)
+
+### Dashboard Page
+
+![Dashboard Page](report_assets/dashboard_page.png)
+
 ## Project Objective
 
 The main objective of this project is to build a simple analytics system that:
@@ -19,6 +29,7 @@ This project demonstrates how data analysis, visualization, and web development 
 
 - Analyze traffic data from a local dataset
 - Calculate total users, average traffic, trend direction, peak day, and lowest day
+- Register and log in with SQL-backed user accounts stored in SQLite
 - Display a traffic trend chart using Matplotlib
 - Search a bundled benchmark dataset of major websites such as `google.com`, `youtube.com`, `reddit.com`, and `amazon.com`
 - Compare benchmark websites by estimated monthly visits, month-over-month change, and year-over-year change
@@ -30,6 +41,7 @@ This project demonstrates how data analysis, visualization, and web development 
 - Flask
 - NumPy
 - Matplotlib
+- SQLite
 - HTML
 - CSS
 - CSV datasets
@@ -41,7 +53,7 @@ This project demonstrates how data analysis, visualization, and web development 
 File:
 
 ```text
-data/Open_Data_Website_Traffic.csv
+data/Traffic.csv
 ```
 
 Purpose:
@@ -57,7 +69,7 @@ Important columns:
 File:
 
 ```text
-data/curated_top_websites_worldwide_feb_2025.csv
+data/top_websites_worldwide_feb_2025.csv
 ```
 
 Purpose:
@@ -93,6 +105,19 @@ This page shows:
 - benchmark dataset section
 - website search analysis
 
+### 2. Login Page
+
+Route:
+
+```text
+/login
+```
+
+This page shows:
+- login form
+- registration form
+- session-based access to the dashboard
+
 ## How the Project Works
 
 1. The application reads the traffic CSV from the `data` folder.
@@ -113,14 +138,18 @@ This page shows:
 ```text
 app.py
 data/
-    Open_Data_Website_Traffic.csv
-    curated_top_websites_worldwide_feb_2025.csv
+    Traffic.csv
+    top_websites_worldwide_feb_2025.csv
 traffic_analyzer/
     static/
         style.css
     templates/
         base.html
         index.html
+        login.html
+report_assets/
+    login_page.png
+    dashboard_page.png
 tests/
     test_analytics.py
     test_benchmark.py
@@ -165,6 +194,7 @@ venv\Scripts\python.exe -m pytest
 
 This project currently focuses on:
 - dataset-based traffic analysis
+- SQLite-backed login authentication
 - static benchmark comparison
 - workshop-friendly architecture
 

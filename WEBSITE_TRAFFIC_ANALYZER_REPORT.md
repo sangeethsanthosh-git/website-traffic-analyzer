@@ -449,3 +449,10 @@ ictproject/
 3. `data/app.db`  
    SQLite database storing registered user accounts.
 
+### 11.4 SCREENSHOTS
+
+1. Login Page  
+   `report_assets/login_page.png`
+
+2. Dashboard Page  
+   `report_assets/dashboard_page.png`

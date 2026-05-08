@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Traffic Analyzer</title>
+    <style>
+:root {
+    --bg-start: #fff7ed;
+    --bg-end: #ecfeff;
+    --panel: rgba(255, 255, 255, 0.9);
+    --panel-border: rgba(15, 118, 110, 0.12);
+    --text-main: #1f2937;
+    --text-soft: #5b6472;
+    --heading: #102a43;
+    --teal: #0f766e;
+    --teal-soft: #ccfbf1;
+    --orange: #ea580c;
+    --orange-soft: #ffedd5;
+    --danger: #b91c1c;
+    --danger-soft: #fee2e2;
+    --success: #166534;
+    --success-soft: #dcfce7;
+    --shadow: 0 18px 45px rgba(16, 42, 67, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+    color: var(--text-main);
+    background:
+        radial-gradient(circle at top left, rgba(251, 191, 36, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(45, 212, 191, 0.2), transparent 28%),
+        linear-gradient(150deg, var(--bg-start), var(--bg-end));
+}
+
+.page-shell {
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 2rem 0 3rem;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+}
+
+.brand-mark {
+    color: var(--heading);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+}
+
+.site-nav a {
+    color: var(--text-soft);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.site-nav a:hover,
+.site-nav .nav-active {
+    background: var(--teal-soft);
+    color: var(--teal);
+}
+
+.inline-form {
+    margin: 0;
+}
+
+.nav-button,
+.user-chip {
+    border-radius: 999px;
+    padding: 0.5rem 0.85rem;
+    font-weight: 700;
+}
+
+.nav-button {
+    background: rgba(15, 118, 110, 0.08);
+    color: var(--teal);
+}
+
+.user-chip {
+    background: rgba(234, 88, 12, 0.12);
+    color: #9a3412;
+}
+
+.hero,
+.stats-grid,
+.content-grid,
+.auth-layout {
+    margin-bottom: 1.5rem;
+}
+
+.hero,
+.content-grid,
+.auth-layout {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.hero {
+    grid-template-columns: 1.35fr 0.85fr;
+    align-items: stretch;
+}
+
+.content-grid {
+    grid-template-columns: 1fr;
+}
+
+.auth-layout {
+    grid-template-columns: 1fr;
+    align-items: center;
+    justify-items: center;
+    min-height: calc(100vh - 10rem);
+}
+
+.hero-copy {
+    padding: 2rem 0.5rem 1rem 0;
+    animation: fade-up 0.8s ease both;
+}
+
+.auth-copy {
+    padding: 1rem 0.5rem 1rem 0;
+    animation: fade-up 0.8s ease both;
+}
+
+.hero .chart-panel {
+    align-self: stretch;
+}
+
+.hero-copy h1,
+.auth-copy h1,
+.panel h2,
+.empty-state h3 {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--heading);
+}
+
+.hero-copy h1,
+.auth-copy h1 {
+    margin: 0.5rem 0 0.9rem;
+    font-size: clamp(2.3rem, 4vw, 4rem);
+    line-height: 1.05;
+    max-width: 12ch;
+}
+
+.hero-text {
+    max-width: 60ch;
+    line-height: 1.7;
+    color: var(--text-soft);
+}
+
+.hero-meta,
+.section-heading {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.hero-note,
+.stat-caption,
+.helper-text,
+.table-muted {
+    color: var(--text-soft);
+}
+
+.eyebrow {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--teal);
+}
+
+.panel {
+    border: 1px solid var(--panel-border);
+    border-radius: 24px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+}
+
+.chart-panel,
+.table-panel,
+.benchmark-panel,
+.page-hero,
+.log-preview-panel,
+.auth-panel {
+    padding: 1.4rem;
+}
+
+.auth-panel {
+    max-width: 520px;
+    width: 100%;
+}
+
+.auth-form,
+.auth-points {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.auth-tabs {
+    display: inline-flex;
+    gap: 0.45rem;
+    padding: 0.35rem;
+    margin: 1rem 0;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.08);
+}
+
+.auth-tab {
+    color: var(--text-soft);
+    text-decoration: none;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.auth-tab-active {
+    background: white;
+    color: var(--teal);
+    box-shadow: 0 6px 18px rgba(16, 42, 67, 0.1);
+}
+
+.auth-point {
+    padding: 1rem 1.1rem;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.benchmark-search-form {
+    display: grid;
+    gap: 0.8rem;
+    margin: 1rem 0 1.2rem;
+}
+
+.benchmark-search-form label {
+    display: grid;
+    gap: 0.45rem;
+    font-weight: 700;
+    color: var(--heading);
+}
+
+input {
+    width: 100%;
+    border: 1px solid rgba(15, 118, 110, 0.18);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    font: inherit;
+    background: rgba(255, 255, 255, 0.94);
+}
+
+input:focus {
+    outline: 3px solid rgba(15, 118, 110, 0.18);
+    border-color: var(--teal);
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+.primary-btn,
+.secondary-btn {
+    width: 100%;
+    padding: 0.92rem 1rem;
+    border-radius: 14px;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, var(--teal), #115e59);
+    color: white;
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.22);
+}
+
+.secondary-btn {
+    margin-top: 0.35rem;
+    background: var(--orange-soft);
+    color: #9a3412;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.benchmark-stats,
+.benchmark-layout,
+.search-metrics {
+    display: grid;
+    gap: 1rem;
+}
+
+.benchmark-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 1rem 0 1.25rem;
+}
+
+.benchmark-layout {
+    grid-template-columns: 1.05fr 1.15fr;
+}
+
+.search-analysis {
+    margin-bottom: 1.25rem;
+}
+
+.search-analysis-card {
+    padding: 1rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.08), rgba(15, 118, 110, 0.08));
+    border: 1px solid rgba(15, 118, 110, 0.12);
+}
+
+.search-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 1rem 0;
+}
+
+.search-insights {
+    display: grid;
+    gap: 0.45rem;
+    line-height: 1.6;
+}
+
+.search-insights p {
+    margin: 0;
+}
+
+.benchmark-chart-block,
+.benchmark-table-block {
+    padding: 1rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid rgba(15, 118, 110, 0.1);
+}
+
+.log-preview-meta {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    padding: 1.2rem;
+    animation: fade-up 0.7s ease both;
+}
+
+.stat-label {
+    display: inline-block;
+    font-size: 0.88rem;
+    color: var(--text-soft);
+}
+
+.stat-value {
+    display: block;
+    margin: 0.4rem 0 0.2rem;
+    font-size: 1.8rem;
+    color: var(--heading);
+}
+
+.chart-image {
+    width: 100%;
+    display: block;
+    border-radius: 18px;
+    margin-top: 0.8rem;
+    background: white;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 0.95rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(15, 118, 110, 0.1);
+}
+
+th {
+    color: var(--heading);
+    font-size: 0.92rem;
+}
+
+.table-badge,
+.mini-badge,
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.table-badge,
+.status-live {
+    background: var(--teal-soft);
+    color: var(--teal);
+}
+
+.mini-badge {
+    background: var(--orange-soft);
+    color: #9a3412;
+}
+
+.status-offline {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.empty-state {
+    margin-top: 1rem;
+    padding: 2rem 1rem;
+    border: 1px dashed rgba(15, 118, 110, 0.22);
+    border-radius: 18px;
+    text-align: center;
+    color: var(--text-soft);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.flash-stack {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.flash {
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    font-weight: 700;
+}
+
+.flash-success {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.flash-error {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.text-link {
+    color: var(--teal);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.text-link:hover {
+    text-decoration: underline;
+}
+
+code {
+    padding: 0.12rem 0.35rem;
+    border-radius: 6px;
+    background: rgba(15, 118, 110, 0.08);
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 960px) {
+    .hero,
+    .content-grid,
+    .stats-grid,
+    .benchmark-stats,
+    .benchmark-layout,
+    .search-metrics,
+    .auth-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hero-copy {
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 720px) {
+    .hero,
+    .content-grid,
+    .stats-grid,
+    .benchmark-stats,
+    .benchmark-layout,
+    .search-metrics,
+    .auth-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .page-shell {
+        width: min(100% - 1rem, 1180px);
+    }
+
+    .hero-copy h1,
+    .auth-copy h1 {
+        max-width: none;
+    }
+
+    .auth-panel {
+        justify-self: stretch;
+    }
+}
+
+</style>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <a href="/" class="brand-mark">Website Traffic Analyzer</a>
+            <nav class="site-nav">
+                
+                    <a
+                        href="/login"
+                        class="nav-active"
+                    >
+                        Login
+                    </a>
+                
+            </nav>
+        </header>
+
+        
+            
+        
+
+        
+<section class="auth-layout">
+    <article class="panel auth-panel">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Account Access</p>
+                <h2>Welcome back</h2>
+            </div>
+            <span class="mini-badge">Login</span>
+        </div>
+
+        <div class="auth-tabs">
+            <a href="/login" class="auth-tab auth-tab-active">Login</a>
+            <a href="/login?mode=register" class="auth-tab ">Register</a>
+        </div>
+
+        <form action="/login" method="post" class="auth-form">
+            <input type="hidden" name="action" value="login">
+
+            <label>
+                Username
+                <input
+                    type="text"
+                    name="username"
+                    value=""
+                    placeholder="Enter a username"
+                    autocomplete="username"
+                    required
+                >
+            </label>
+
+            <label>
+                Password
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Minimum 6 characters"
+                    autocomplete="current-password"
+                    required
+                >
+            </label>
+
+            <button type="submit" class="primary-btn">
+                Login
+            </button>
+        </form>
+
+        <p class="helper-text">
+            
+                Need a first account? Use the register tab above.
+            
+        </p>
+    </article>
+</section>
+
+    </div>
+</body>
+</html>
