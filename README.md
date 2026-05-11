@@ -4,6 +4,9 @@ Website Traffic Analyzer is a workshop-level Flask web application that analyzes
 
 The project is designed to be simple, practical, and easy to explain. All runtime Python logic is kept inside `app.py`, which makes the project suitable for classroom demos, workshops, and mini project presentations.
 
+## View Live
+https://website-traffic-analyzer.onrender.com
+
 ## Screenshots
 
 ### Login Page
